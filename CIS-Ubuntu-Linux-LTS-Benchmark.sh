@@ -26,5 +26,7 @@ echo "install hfsplus /bin/true" > /etc/modprobe.d/hfsplus.conf
 echo "install udf /bin/true" > /etc/modprobe.d/udf.conf
 #1.1.1.7 Ensure mounting of FAT filesystems is limited (Manual)
 echo "install vfat /bin/true" > /etc/modprobe.d/vfat.conf
-#1.1.2 Ensure /tmp is configured (Automate)
-#
+#1.1.2 Ensure /tmp is configured (Automated)
+cp -v /usr/share/systemd/tmp.mount /etc/systemd/system/
+systemctl daemon-reload | systemctl --now enable tmp.mount
+
