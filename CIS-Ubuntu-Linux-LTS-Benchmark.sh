@@ -27,6 +27,9 @@ echo "install udf /bin/true" > /etc/modprobe.d/udf.conf
 #1.1.1.7 Ensure mounting of FAT filesystems is limited (Manual)
 echo "install vfat /bin/true" > /etc/modprobe.d/vfat.conf
 #1.1.2 Ensure /tmp is configured (Automated)
+#1.1.3 Ensure nodev option set on /tmp partition (Automated)
+#1.1.4 Ensure nosuid option set on /tmp partition (Automated)
+#1.1.5 Ensure noexec option set on /tmp partition (Automated)
 cp -v /usr/share/systemd/tmp.mount /etc/systemd/system/
 systemctl daemon-reload | systemctl --now enable tmp.mount
-
+echo "tmpfs           /tmp            tmpfs    defaults,rw,nosuid,nodev,noexec,relatime,rw,nosuid,nodev,noexec,relatime  0  0" >> /etc/fstab
