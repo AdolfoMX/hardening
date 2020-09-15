@@ -26,6 +26,5 @@ echo "install hfsplus /bin/true" > /etc/modprobe.d/hfsplus.conf
 echo "install udf /bin/true" > /etc/modprobe.d/udf.conf
 #1.1.1.7 Ensure mounting of FAT filesystems is limited (Manual)
 echo "install vfat /bin/true" > /etc/modprobe.d/vfat.conf
-######################################################################
 #1.1.2 Ensure /tmp is configured (Automate)
-######################################################################
+#
