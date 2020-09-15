@@ -6,12 +6,13 @@
 #-> Oscar Uriel Chalé                                                                                                       #
 #-> Adolfo Tun Dzul                                                                                                         #
 #############################################################################################################################
-#1 Initial Setup                                                     #
+#1 Initial Setup
+#####################################################################
+
 ######################################################################
-#1.1 Filesystem Configuration
+#1.1 Filesystem Configuration                                        #
 ######################################################################
 #1.1.1 Disable unused filesystems
-######################################################################
 #1.1.1.1 Ensure mounting of cramfs filesystems is disabled (Automated)
 echo "install cramfs /bin/true" > /etc/modprobe.d/cramfs.conf
 #1.1.1.2 Ensure mounting of freevxfs filesystems is disable (Automated)
