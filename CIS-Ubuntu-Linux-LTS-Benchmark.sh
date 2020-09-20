@@ -33,3 +33,10 @@ echo "install vfat /bin/true" > /etc/modprobe.d/vfat.conf
 cp -v /usr/share/systemd/tmp.mount /etc/systemd/system/
 systemctl daemon-reload | systemctl --now enable tmp.mount
 echo "tmpfs           /tmp            tmpfs    defaults,rw,nosuid,nodev,noexec,relatime,rw,nosuid,nodev,noexec,relatime  0  0" >> /etc/fstab
+#1.1.6 Ensure /dev/shm is configured (Automated)
+#1.1.7 Ensure nodev option set on /dev/shm partition (Automated)
+#1.1.8 Ensure nosuid option set on /dev/shm/ partition (Automated)
+#1.1.9 Ensure noexec option set on /dev/shm partition (Automated)
+echo "tmpfs           /dev/shm            tmpfs    defaults,noexec,nodev,nosuid,sec,seclabel  0  0" >> /etc/fstab
+#1.1.10
+#
