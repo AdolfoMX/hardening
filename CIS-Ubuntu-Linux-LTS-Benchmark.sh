@@ -44,4 +44,4 @@ echo "tmpfs           /dev/shm            tmpfs    defaults,noexec,nodev,nosuid 
 #1.1.13 Ensure nosuid option set on /var/tmp/partition (Automated)
 #1.1.14 Ensure noexec option set on /var/tmp partition (AUtomated)
 mount -t ext4 /dev/sda3 /var/tmp
-echo "tmpfs           /var/tmp            ext4   defaults,nosuid,nodev,noexec  0  0" >> /etc/fstab
+echo "ext4           /var/tmp            ext4   defaults,nosuid,nodev,noexec  0  0" >> /etc/fstab
