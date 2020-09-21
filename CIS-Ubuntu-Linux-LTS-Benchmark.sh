@@ -40,3 +40,8 @@ echo "tmpfs           /tmp            tmpfs    defaults,rw,nosuid,nodev,noexec,r
 echo "tmpfs           /dev/shm            tmpfs    defaults,noexec,nodev,nosuid  0  0" >> /etc/fstab
 #1.1.10 Ensure separate partition exists for /var (Automated)
 #1.1.11 Ensure separate partition exists for /var/tmp (Automated)
+#1.1.12 Ensure nodev option set on /var/tmp/ partition (Automated)
+#1.1.13 Ensure nosuid option set on /var/tmp/partition (Automated)
+#1.1.14 Ensure noexec option set on /var/tmp partition (AUtomated)
+mount -t tmpfs ext4 /var/tmp
+echo "tmpfs           /var/tmp            ext4   defaults,nosuid,nodev,noexec  0  0" >> /etc/fstab
