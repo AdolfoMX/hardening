@@ -6,11 +6,11 @@
 #-> Oscar Uriel Chalé                                                                                                       #
 #-> Adolfo Tun Dzul                                                                                                         #
 #############################################################################################################################
-#1 Initial Setup
-######################################################################
-##########################################################
-#1.1 Filesystem Configuration                            #
-##########################################################
+#1 Initial Setup                                                    #
+#####################################################################
+###############################
+#1.1 Filesystem Configuration #
+###############################
 #1.1.1 Disable unused filesystems
 #1.1.1.1 Ensure mounting of cramfs filesystems is disabled (Automated)
 echo "install cramfs /bin/true" > /etc/modprobe.d/cramfs.conf
@@ -45,3 +45,15 @@ echo "tmpfs           /dev/shm            tmpfs    defaults,noexec,nodev,nosuid 
 #1.1.14 Ensure noexec option set on /var/tmp partition (AUtomated)
 mount -t ext4 /dev/sda3 /var/tmp
 echo "ext4           /var/tmp            ext4   defaults,nosuid,nodev,noexec  0  0" >> /etc/fstab
+#1.1.15 Ensure separate partition exists for /var/log (Automated)
+#1.1.16 Ensure separate partition exists for /var/log/audit (Automated)
+#1.1.17 Ensure separate partition exists for /home (Automated)
+#1.1.18 Ensure nodev option set on /home partition (Automated)
+echo "ext4           /home            ext4   defaults,nodev  0  0" >> /etc/fstab
+#1.1.19 Ensure nodev option set on removable media partitions (Manual)
+#1.1.20 Ensure nosuid option set on removable media partitions (Manual)
+#1.1.21 Ensure noexec option set on removable media partitions (Manual)
+#1.1.22 Ensure sticky bit is set on all world-writable directories (Automated)
+df --local -P | awk '{if (NR!=1) print $6}' | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | xargs -I '{}' chmod a+t '{}'
+#1.1.23 Disable Automouting (Automated)
+apt purge autofs
