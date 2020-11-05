@@ -133,24 +133,22 @@ kernel.randomize_va_space = 2
 kernel.randomize_va_space = 2 |  sysctl -w kernel.randomize_va_space=2
 #1.6.3 Ensure prelink is disabled (Automated)
 #Verify prelink is not installed:
- dpkg -s prelink
+dpkg -s prelink
 Remediation:
 # prelink -ua
 #(Uninstall prelink using the appropriate package manager or manual installation)
- apt purge prelink
+apt purge prelink
 #1.6.4 Ensure core dumps are restricted (Automated)
 #Run the following commands and verify output matches:
- grep -E '^(\*|\s).*hard.*core.*(\s+#.*)?$' /etc/security/limits.conf
-/etc/security/limits.d/*
-* hard core 0
- sysctl fs.suid_dumpable
+grep -E '^(\*|\s).*hard.*core.*(\s+#.*)?$' /etc/security/limits.conf 
+sysctl fs.suid_dumpable
 fs.suid_dumpable = 0
- grep "fs.suid_dumpable" /etc/sysctl.conf /etc/sysctl.d/*
+grep "fs.suid_dumpable" /etc/sysctl.conf /etc/sysctl.d/*
 fs.suid_dumpable = 0
 #check if systemd-coredump is installed:
 systemctl is-enabled coredump.service
 # to set the active kernel parameter:
- sysctl -w fs.suid_dumpable=0
+sysctl -w fs.suid_dumpable=0
 ##If systemd-coredump is installed:
 edit /etc/systemd/coredump.conf and add/modify the following lines:
 Storage=none
@@ -172,55 +170,48 @@ systemctl daemon-reload
 (Automated)
 #Run the following commands to verify that all linux lines have the apparmor=1 and
 security=apparmor parameters set:
-  grep "^\s*linux" /boot/grub/grub.cfg | grep -v "apparmor=1"
-  grep "^\s*linux" /boot/grub/grub.cfg | grep -v "security=apparmor"
+ grep "^\s*linux" /boot/grub/grub.cfg | grep -v "apparmor=1"
+ grep "^\s*linux" /boot/grub/grub.cfg | grep -v "security=apparmor"
 return:nothing
 #Edit /etc/default/grub and add the appermor=1 and security=apparmor parameters to
 # the GRUB_CMDLINE_LINUX= line
-
 # GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
 # Run the following command to update the grub2 configuration:
 # update-grub
-#1.7.1.3 Ensure all AppArmor Profiles are in enforce or complain mode
-(Automated)
-#Verify that profiles are loaded, and are in either enforce or
-complain mode:
-  apparmor_status | grep profiles
+#1.7.1.3 Ensure all AppArmor Profiles are in enforce or complain mode (Automated)
+# Verify that profiles are loaded, and are in either enforce or complain mode:
+apparmor_status | grep profiles
 #Verify no processes are unconfined
-  apparmor_status | grep processes
+apparmor_status | grep processes
 #Set all profiles to enforce mode:
-  aa-enforce /etc/apparmor.d/*
-  aa-complain /etc/apparmor.d/*
+aa-enforce /etc/apparmor.d/*
+aa-complain /etc/apparmor.d/*
 #1.7.1.4 Ensure all AppArmor Profiles are enforcing (Automated)
-#Verify that profiles are loaded and are not in complain
-mode:
-  apparmor_status | grep profiles
+#Verify that profiles are loaded and are not in complain mode:
+apparmor_status | grep profiles
 #Verify that no processes are unconfined:
-  apparmor_status | grep processes
+apparmor_status | grep processes
 #Set all profiles to enforce mode:
-  aa-enforce /etc/apparmor.d/*
+aa-enforce /etc/apparmor.d/*
 #####################################################################
 ####################################
 1.8 Warning Banners                #
 ####################################
 #1.8.1.1 Ensure message of the day is configured properly (Automated)
 #verify that the contents match site policy:
-  cat /etc/motd
+cat /etc/motd
 #verify no results are returned:
-  grep -E -i "(\\\v|\\\r|\\\m|\\\s|$(grep '^ID=' /etc/os-release | cut -d= -
-f2 | sed -e 's/"//g'))" /etc/motd
+grep -E -i "(\\\v|\\\r|\\\m|\\\s|$(grep '^ID=' /etc/os-release | cut -d= -f2 | sed -e 's/"//g'))" /etc/motd
 # Remove the motd file: (If the motd is not used, this file can be removed.)
-  rm /etc/motd
-#1.8.1.2 Ensure local login warning banner is configured properly
-(Automated)
+rm /etc/motd
+#1.8.1.2 Ensure local login warning banner is configured properly (Automated)
 #Run the following command and verify that the contents match site policy:
- cat /etc/issue
-verify no results are returned:
-  grep -E -i "(\\\v|\\\r|\\\m|\\\s|$(grep '^ID=' /etc/os-release | cut -d= -
-f2 | sed -e 's/"//g'))" /etc/issue
+cat /etc/issue
+# verify no results are returned:
+grep -E -i "(\\\v|\\\r|\\\m|\\\s|$(grep '^ID=' /etc/os-release | cut -d= -f2 | sed -e 's/"//g'))" /etc/issue
 #1.8.1.3 Ensure remote login warning banner is configured properly (Automated)
 #verify that the contents match site policy:
-#  cat /etc/issue.net
+cat /etc/issue.net
 #verify no results are returned:
 grep -E -i "(\\\v|\\\r|\\\m|\\\s|$(grep '^ID=' /etc/os-release | cut -d = -f2 | sed -e 's/"//g'))" /etc/issue.net
 ##Edit the /etc/issue.net file with the appropriate contents according to your site policy,
@@ -393,20 +384,20 @@ apt purge nis
 #Run the following command:
 lsof -i -P -n | grep -v "(ESTABLISHED)"} 
 #remove the package containing the service:
- apt purge <package_name>
+apt purge <package_name>
 ###If required packages have a dependency:###
- systemctl --now mask <service_name>
+systemctl --now mask <service_name>
 #############################################################################################################################
 #####################################
 #3 Network Configuration            #
 #####################################
 #3.1 Disable unused network protocols and devices
 #3.1.1 Disable IPv6 (Manual)
- grep "^\s*linux" /boot/grub/grub.cfg | grep -v "ipv6.disable=1"
-#Edit /etc/default/grub and add ipv6.disable=1 to the GRUB_CMDLINE_LINUX parameters:
-GRUB_CMDLINE_LINUX="ipv6.disable=1"
-#update the grub2 configuration:
- update-grub
+grep "^\s*linux" /boot/grub/grub.cfg | grep -v "ipv6.disable=1"
+# Edit /etc/default/grub and add ipv6.disable=1 to the GRUB_CMDLINE_LINUX parameters:
+# GRUB_CMDLINE_LINUX="ipv6.disable=1"
+# update the grub2 configuration:
+update-grub
 #3.1.2 Ensure wireless interfaces are disabled (Automated)
 Profile Applicability:
 #Run the following script to verify no wireless interfaces are active on the system:
