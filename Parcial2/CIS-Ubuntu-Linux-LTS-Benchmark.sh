@@ -521,3 +521,233 @@ net.ipv6.conf.default.accept_ra = 0" >> /etc/sysctl.conf
 sysctl -w net.ipv6.conf.all.accept_ra=0
 sysctl -w net.ipv6.conf.default.accept_ra=0
 sysctl -w net.ipv6.route.flush=1
+#############################################################################################################################
+#####################################
+#4 Logging and Auditing             #
+#####################################
+#####################################################################
+###########################################
+#4.1 Configure System Accounting (auditd) #
+###########################################
+#4.1.1 Ensure auditing is enabled
+#4.1.1.1 Ensure auditd is installed (Automated)
+apt install auditd audispd-plugins
+#4.1.1.2 Ensure auditd service is enabled (Automated)
+systemctl --now enable auditd
+#4.1.1.3 Ensure auditing for processes that start prior to auditd is enabled (Automated)
+echo "GRUB_CMDLINE_LINUX="audit=1"" >> /etc/default/grub
+# Run the following command to update the grub2 configuration:
+update-grub
+#4.1.1.4 Ensure audit_backlog_limit is sufficient (Automated)
+echo "GRUB_CMDLINE_LINUX="audit_backlog_limit=8192"" >> /etc/default/grub
+# Run the following command to update the grub2 configuration:
+update-grub
+#4.1.2 Configure Data Retention 
+#4.1.2.1 Ensure audit log storage size is configured (Automated)
+echo "max_log_file = 860" >> /etc/audit/auditd.conf 
+#4.1.2.2 Ensure audit logs are not automatically deleted (Automated)
+echo "max_log_file_action = keep_logs" >> /etc/audit/auditd.conf
+#4.1.2.3 Ensure system is disabled when audit logs are full (Automated)
+echo "space_left_action = email
+action_mail_acct = root
+admin_space_left_action = halt" >> /etc/audit/auditd.conf
+#4.1.3 Ensure events that modify date and time information are collected (Automated)
+# For 32 bit systems 
+echo "-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k timechange
+-a always,exit -F arch=b32 -S clock_settime -k time-change
+-w /etc/localtime -p wa -k time-change
+" >> /etc/audit/rules.d/time-change.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change
+-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k timechange
+-a always,exit -F arch=b64 -S clock_settime -k time-change
+-a always,exit -F arch=b32 -S clock_settime -k time-change
+-w /etc/localtime -p wa -k time-change" >> /etc/audit/rules.d/time-change.rules
+#4.1.4 Ensure events that modify user/group information are collected (Automated)
+echo "-w /etc/group -p wa -k identity
+-w /etc/passwd -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/security/opasswd -p wa -k identity" >> /etc/audit/rules.d/identity.rules
+#4.1.5 Ensure events that modify the system's network environment are collected (Automated)
+# For 32 bit systems
+echo "-a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale
+-w /etc/issue -p wa -k system-locale
+-w /etc/issue.net -p wa -k system-locale
+-w /etc/hosts -p wa -k system-locale
+-w /etc/network -p wa -k system-locale" >> /etc/audit/rules.d/system-locale.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale
+-a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale
+-w /etc/issue -p wa -k system-locale
+-w /etc/issue.net -p wa -k system-locale
+-w /etc/hosts -p wa -k system-locale
+-w /etc/network -p wa -k system-locale" >> /etc/audit/rules.d/system-locale.rules
+#4.1.6 Ensure events that modify the system's Mandatory Access Controls are collected (Automated)
+echo "-w /etc/apparmor/ -p wa -k MAC-policy
+-w /etc/apparmor.d/ -p wa -k MAC-policy" >> /etc/audit/rules.d/MAC-policy.rules
+#4.1.7 Ensure login and logout events are collected (Automated)
+echo "-w /var/log/faillog -p wa -k logins
+-w /var/log/lastlog -p wa -k logins
+-w /var/log/tallylog -p wa -k logins" >> /etc/audit/rules.d/logins.rules
+#4.1.8 Ensure session initiation information is collected (Automated)
+echo "-w /var/run/utmp -p wa -k session
+-w /var/log/wtmp -p wa -k logins
+-w /var/log/btmp -p wa -k logins" >> /etc/audit/rules.d/session.rules
+#4.1.9 Ensure discretionary access control permission modification events are collected (Automated)
+# For 32 bit systems
+echo "-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F
+auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F
+auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S
+removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295
+-k perm_mod" >> /etc/audit/rules.d/perm_mod.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F
+auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F
+auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -F
+auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F
+auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b64 -S setxattr -S lsetxattr -S fsetxattr -S
+removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295
+-k perm_mod
+-a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S
+removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295
+-k perm_mod" >> /etc/audit/rules.d/perm_mod.rules
+#4.1.10 Ensure unsuccessful unauthorized file access attempts are collected (Automated)
+# For 32 bit systems
+echo "-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S
+ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S
+ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access" >> /etc/audit/rules.d/audit.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S
+ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S
+ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S
+ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S
+ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access" >> /etc/audit/rules.d/access.rules
+#4.1.11 Ensure use of privileged commands is collected (Automated)
+find <partition> -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>='"$(awk
+'/^\s*UID_MIN/{print $2}' /etc/login.defs)"' -F auid!=4294967295 -k privileged" }'
+# Edit or create a file in the /etc/audit/rules.d/ directory ending in .rules:
+echo " find / -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a
+always,exit -F path=" $1 " -F perm=x -F auid>='"$(awk '/^\s*UID_MIN/{print
+$2}' /etc/login.defs)"' -F auid!=4294967295 -k privileged" }' >> /etc/audit/rules.d/privileged.rules" >> /etc/audit/rules.d/privileged.rules
+#4.1.12 Ensure successful file system mounts are collected (Automated)
+# For 32 bit systems
+echo "-a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts" >> /etc/audit/rules.d/audit.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=4294967295 -k
+mounts
+-a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k
+mounts" >> /etc/audit/rules.d/mounts.rules
+#4.1.13 Ensure file deletion events by users are collected (Automated)
+# For 32 bit systems
+echo "-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -F
+auid>=1000 -F auid!=4294967295 -k delete" >> /etc/audit/rules.d/audit.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F
+auid>=1000 -F auid!=4294967295 -k delete
+-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -F
+auid>=1000 -F auid!=4294967295 -k delete" >> /etc/audit/rules.d/delete.rules
+#4.1.14 Ensure changes to system administration scope (sudoers) is collected (Automated)
+echo "-w /etc/sudoers -p wa -k scope
+-w /etc/sudoers.d/ -p wa -k scope" >> /etc/audit/rules.d/scope.rules
+#4.1.15 Ensure system administrator command executions (sudo) are collected (Automated)
+# For 32 bit systems
+echo "-a exit,always -F arch=b32 -C euid!=uid -F euid=0 -Fauid>=1000 -F
+auid!=4294967295 -S execve -k actions" >> /etc/audit/rules.d/actions.rules
+# For 64 bit systems
+echo "-a always,exit -F arch=b64 -C euid!=uid -F euid=0 -Fauid>=1000 -F
+auid!=4294967295 -S execve -k actions
+-a always,exit -F arch=b32 -C euid!=uid -F euid=0 -Fauid>=1000 -F
+auid!=4294967295 -S execve -k actions" >> /etc/audit/rules.d/actions.rules
+#4.1.16 Ensure kernel module loading and unloading is collected (Automated)
+# For 32 bit systems
+echo "-w /sbin/insmod -p x -k modules
+-w /sbin/rmmod -p x -k modules
+-w /sbin/modprobe -p x -k modules
+-a always,exit -F arch=b32 -S init_module -S delete_module -k modules" >> /etc/audit/rules.d/modules.rules
+# For 64 bit systems
+echo "-w /sbin/insmod -p x -k modules
+-w /sbin/rmmod -p x -k modules
+-w /sbin/modprobe -p x -k modules
+-a always,exit -F arch=b64 -S init_module -S delete_module -k modules" >> /etc/audit/rules.d/modules.rules
+#4.1.17 Ensure the audit configuration is immutable (Automated)
+echo "-e 2" >> /etc/audit/rules.d/99-finalize.rules
+#####################################################################
+##########################
+#4.2 Configure Logging   #
+##########################
+#4.2.1 Configure rsyslog
+#4.2.1.1 Ensure rsyslog is installed (Automated)
+apt install rsyslog
+#4.2.1.2 Ensure rsyslog Service is enabled (Automated)
+systemctl --now enable rsyslog
+#4.2.1.3 Ensure logging is configured (Manual)
+echo "*.emerg :omusrmsg:*
+auth,authpriv.* /var/log/auth.log
+mail.* -/var/log/mail
+mail.info -/var/log/mail.info
+mail.warning -/var/log/mail.warn
+mail.err /var/log/mail.err
+news.crit -/var/log/news/news.crit
+news.err -/var/log/news/news.err
+news.notice -/var/log/news/news.notice
+*.=warning;*.=err -/var/log/warn
+*.crit /var/log/warn
+*.*;mail.none;news.none -/var/log/messages
+local0,local1.* -/var/log/localmessages
+local2,local3.* -/var/log/localmessages
+local4,local5.* -/var/log/localmessages
+local6,local7.* -/var/log/localmessages" >> /etc/rsyslog.conf
+# Doing the same case to "/etc/rsyslog.d/*.conf" 
+# Run the following command to reload the rsyslog configuration:
+systemctl reload rsyslog
+#4.2.1.4 Ensure rsyslog default file permissions configured (Automated)
+echo "$FileCreateMode 0640" >> /etc/rsyslog.conf
+echo "$FileCreateMode 0640" >> /etc/rsyslog.d/*.conf
+#4.2.1.5 Ensure rsyslog is configured to send logs to a remote log host (Automated)
+# Edit the /etc/rsyslog.conf and /etc/rsyslog.d/*.conf
+echo "*.* action(type="omfwd" target="192.168.2.100" port="514" protocol="tcp"
+
+action.resumeRetryCount="100"
+ queue.type="LinkedList"
+queue.size="1000")" >> /etc/rsyslog.conf
+# Run the following commands to reload the rsyslog configuration:
+systemctl stop rsyslog
+systemctl start rsyslog
+#4.2.1.6 Ensure remote rsyslog messages are only accepted on designated log hosts. (Manual)
+echo "$ModLoad imtcp
+$InputTCPServerRun 514" >> /etc/rsyslog.conf
+# Run the following command to reload the rsyslogd configuration: 
+systemctl restart rsyslog
+#4.2.2 Configure journald
+#4.2.2.1 Ensure journald is configured to send logs to rsyslog (Automated)
+echo "ForwardToSyslog=yes" >> /etc/systemd/journald.conf
+#4.2.2.2 Ensure journald is configured to compress large log files (Automated)
+echo "Compress=yes" >> /etc/systemd/journald.conf
+#4.2.2.3 Ensure journald is configured to write logfiles to persistent disk (Automated)
+echo "Storage=persistent" >> /etc/systemd/journald.conf
+#4.2.3 Ensure permissions on all logfiles are configured (Automated)
+find /var/log -type f -exec chmod g-wx,o-rwx "{}" + -o -type d -exec chmod gw,o-rwx "{}" +
+#4.3 Ensure logrotate is configured (Manual)
+#4.4 Ensure logrotate assigns appropriate permissions (Automated)
+echo "create 0640 root utmp" >> /etc/logrotate.conf
+update create
+#############################################################################################################################
+##############################################
+#5 Access, Authentication and Authorization  #
+##############################################
+#####################################################################
+#############################################
+#5.1 Configure time-based job schedulers    #
+#############################################
+#5.1.1 Ensure cron daemon is enabled and running (Automated)
