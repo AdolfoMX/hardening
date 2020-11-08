@@ -150,9 +150,9 @@ systemctl is-enabled coredump.service
 # to set the active kernel parameter:
 sysctl -w fs.suid_dumpable=0
 ##If systemd-coredump is installed:
-edit /etc/systemd/coredump.conf and add/modify the following lines:
-Storage=none
-ProcessSizeMax=0
+#edit /etc/systemd/coredump.conf and add/modify the following lines:
+echo "Storage=none
+ProcessSizeMax=0" >> /etc/systemd/coredump.conf
 #RUN
 systemctl daemon-reload
 #####################################################################
@@ -164,15 +164,15 @@ systemctl daemon-reload
 1.7.1.1 Ensure AppArmor is installed (Automated)
 #Verify that AppArmor is installed:
 # dpkg -s apparmor
-#Install AppArmor.
+# Install AppArmor.
  apt install apparmor
 #1.7.1.2 Ensure AppArmor is enabled in the bootloader configuration
 (Automated)
-#Run the following commands to verify that all linux lines have the apparmor=1 and
-security=apparmor parameters set:
- grep "^\s*linux" /boot/grub/grub.cfg | grep -v "apparmor=1"
- grep "^\s*linux" /boot/grub/grub.cfg | grep -v "security=apparmor"
-return:nothing
+# Run the following commands to verify that all linux lines have the apparmor=1 and
+# security=apparmor parameters set:
+grep "^\s*linux" /boot/grub/grub.cfg | grep -v "apparmor=1"
+grep "^\s*linux" /boot/grub/grub.cfg | grep -v "security=apparmor"
+# return:nothing
 #Edit /etc/default/grub and add the appermor=1 and security=apparmor parameters to
 # the GRUB_CMDLINE_LINUX= line
 # GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
@@ -272,7 +272,7 @@ apt purge xinetd | apt purge openbsd-inetd
 #2.2.1 Time Synchronization
 #2.2.1.1 Ensure time synchronization is in use (Automated)
 systemctl is-enabled systemd-timesyncd
-#  install chrony or NTP.
+# install chrony or NTP.
 apt install chrony | apt install ntp
 #2.2.1.2 Ensure systemd-timesyncd is configured (Manual)
 apt purge ntp | apt purge chrony
@@ -347,39 +347,39 @@ apt purge rsync
 #2.2.17 Ensure NIS Server is not installed (Automated)
 apt purge nis
 #####################################################################
-####################################
-2.3 Service Clients                #
-####################################
+###############################
+#2.3 Service Clients          #
+###############################
 #2.3.1 Ensure NIS Client is not installed (Automated)
 #to provide the needed information:
- dpkg -s nis
+dpkg -s nis
 #Uninstall nis:
- apt purge nis
+apt purge nis
 #2.3.2 Ensure rsh client is not installed (Automated)
 #Verify rsh-client is not installed
- dpkg -s rsh-client
+dpkg -s rsh-client
 #Uninstall rsh:
- apt purge rsh-client
+apt purge rsh-client
 #2.3.3 Ensure talk client is not installed (Automated)
 #Verify talk is not installed
- dpkg -s talk
+dpkg -s talk
 #Uninstall talk:
- apt purge talk
+apt purge talk
 #2.3.4 Ensure telnet client is not installed (Automated)
-#Verify telnet is not installed.
- dpkg -s telnet
+# Verify telnet is not installed.
+dpkg -s telnet
 #Uninstall telnet:
- apt purge telnet
+apt purge telnet
 #2.3.5 Ensure LDAP client is not installed (Automated)
-#Verify that ldap-utils is not installed
- dpkg -s ldap-utils
-#Uninstall ldap-utils:
- apt purge ldap-utils
+# Verify that ldap-utils is not installed
+dpkg -s ldap-utils
+# Uninstall ldap-utils:
+apt purge ldap-utils
 #2.3.6 Ensure RPC is not installed (Automated)
 #verify rpcbind is not installed
- dpkg -s rpcbind
+dpkg -s rpcbind
 #remove rpcbind:
- apt purge rpcbind
+apt purge rpcbind
 #2.4 Ensure nonessential services are removed or masked (Manual)
 #Run the following command:
 lsof -i -P -n | grep -v "(ESTABLISHED)"} 
@@ -395,12 +395,11 @@ systemctl --now mask <service_name>
 #3.1.1 Disable IPv6 (Manual)
 grep "^\s*linux" /boot/grub/grub.cfg | grep -v "ipv6.disable=1"
 # Edit /etc/default/grub and add ipv6.disable=1 to the GRUB_CMDLINE_LINUX parameters:
-# GRUB_CMDLINE_LINUX="ipv6.disable=1"
+echo "GRUB_CMDLINE_LINUX="ipv6.disable=1"" >> /etc/default/grub
 # update the grub2 configuration:
 update-grub
 #3.1.2 Ensure wireless interfaces are disabled (Automated)
-Profile Applicability:
-#Run the following script to verify no wireless interfaces are active on the system:
+# Run the following script to verify no wireless interfaces are active on the system:
  !/bin/bash
  if command -v nmcli >/dev/null 2>&1 ; then
   nmcli radio all | grep -Eq '\s*\S+\s+disabled\s+\S+\s+disabled\b' && echo
@@ -424,11 +423,11 @@ else
  echo "Wireless is not enabled"
 fi
 #####################################################################
-#####################################
-#3.2 Network Parameters (Host Only) #
-#####################################
+######################################
+#3.2 Network Parameters (Host Only)  #
+######################################
 #3.2.1 Ensure packet redirect sending is disabled (Automated)
-#Run the following commands and verify output matches:
+# Run the following commands and verify output matches:
 sysctl net.ipv4.conf.all.send_redirects
 net.ipv4.conf.all.send_redirects = 0
 sysctl net.ipv4.conf.default.send_redirects
