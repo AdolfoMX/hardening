@@ -157,9 +157,9 @@ ProcessSizeMax=0" >> /etc/systemd/coredump.conf
 systemctl daemon-reload
 #####################################################################
 ##########################################
-1.7 Mandatory Access Control             #
+#1.7 Mandatory Access Control             #
 #########################################
-1.7.1 Configure AppArmor            #
+#1.7.1 Configure AppArmor            #
 #####################################
 1.7.1.1 Ensure AppArmor is installed (Automated)
 #Verify that AppArmor is installed:
@@ -195,7 +195,7 @@ apparmor_status | grep processes
 aa-enforce /etc/apparmor.d/*
 #####################################################################
 ####################################
-1.8 Warning Banners                #
+#1.8 Warning Banners                #
 ####################################
 #1.8.1.1 Ensure message of the day is configured properly (Automated)
 #verify that the contents match site policy:
